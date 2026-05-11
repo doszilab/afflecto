@@ -1,0 +1,38 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%labels
+    Author Matyas Pajkos
+    Description AFFlecto preprocessing container with Python, Biopython, NumPy, DSSP/mkdssp
+
+%environment
+    export LC_ALL=C
+    export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
+
+%post
+    apt-get update
+
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        python3 \
+        python3-pip \
+        python3-dev \
+        dssp \
+        ca-certificates \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/*
+
+    python3 -m pip install --no-cache-dir \
+        numpy \
+        biopython
+
+    # Make both names available, because systems differ.
+    if command -v mkdssp >/dev/null 2>&1 && [ ! -e /usr/local/bin/dssp ]; then
+        ln -s "$(command -v mkdssp)" /usr/local/bin/dssp
+    fi
+
+    if command -v dssp >/dev/null 2>&1 && [ ! -e /usr/local/bin/mkdssp ]; then
+        ln -s "$(command -v dssp)" /usr/local/bin/mkdssp
+    fi
+
+%runscript
+    exec "$@"

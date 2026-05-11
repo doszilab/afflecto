@@ -1,0 +1,35 @@
+# Nextflow
+.nextflow/
+.nextflow*
+work/
+timeline.*
+report.*
+trace.*
+dag.*
+
+# Results
+results/
+results_*/
+output/
+outputs/
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Containers
+*.sif
+
+# Temporary
+tmp/
+temp/
