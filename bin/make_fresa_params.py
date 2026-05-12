@@ -39,6 +39,8 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--place-sidechains", default="false")
     ap.add_argument("--cb-for-globular", default="true")
 
+    ap.add_argument("--use-TRS", default="true", choices=["true", "false"])
+
     return ap.parse_args()
 
 
@@ -106,8 +108,14 @@ def build_region_fields(accession: str, classes: List[List], trs: List[List]) ->
     return regions
 
 
-def write_params(args: argparse.Namespace, structure_out: Path, params_path: Path, classes: List[List], trs: List[List]) -> None:
-    regions = build_region_fields(args.accession, classes, trs)
+def write_params(
+    args: argparse.Namespace,
+    structure_out: Path,
+    params_path: Path,
+    classes: List[List],
+    trs_for_params: List[List],
+) -> None:
+    regions = build_region_fields(args.accession, classes, trs_for_params)
 
     path_output_abs = str(params_path.parent.resolve()) + "/"
     structure_abs = str(structure_out.resolve())
@@ -162,7 +170,16 @@ def main() -> None:
         shutil.copy2(structure_in, structure_out)
 
     classes, trs = parse_regions_tsv(regions_tsv, args.accession)
-    write_params(args, structure_out, params_path, classes, trs)
+
+    trs_for_params = trs if args.use_TRS == "true" else []
+
+    write_params(
+        args=args,
+        structure_out=structure_out,
+        params_path=params_path,
+        classes=classes,
+        trs_for_params=trs_for_params,
+    )
 
     meta = {
         "accession": args.accession,
@@ -176,6 +193,8 @@ def main() -> None:
         "fresa_threads": args.fresa_threads,
         "n_regions": len(classes),
         "n_trs": len(trs),
+        "use_TRS": args.use_TRS,
+        "n_trs_written_to_params": len(trs_for_params),
     }
 
     with open(meta_json, "w") as fh:

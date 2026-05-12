@@ -555,6 +555,20 @@ def read_classes_from_tsv(tsv_path: str | Path, expected_acc: str) -> Tuple[List
 
     return classes, trs
 
+def trs_fully_contained_in_non_rigid(trs_region: List[int], classes: List[List]) -> bool:
+    trs_s0, trs_e0 = trs_region
+
+    for _acc, s, e, t in classes:
+        if str(t).lower() == "rigid":
+            continue
+
+        class_s0 = int(s) - 1
+        class_e0 = int(e) - 1
+
+        if class_s0 <= trs_s0 and trs_e0 <= class_e0:
+            return True
+
+    return False
 
 def validate_classes(
     classes: List[List],
@@ -580,6 +594,14 @@ def validate_classes(
     for s0, e0 in trs:
         if not (0 <= s0 <= e0 < protein_len):
             raise ValueError(f"[{accession}] Invalid TRS coordinates: {s0 + 1}-{e0 + 1}; length={protein_len}")
+
+        if not trs_fully_contained_in_non_rigid([s0, e0], classes):
+            raise ValueError(
+                f"[{accession}] Invalid TRS region {s0 + 1}-{e0 + 1}: "
+                "TRS regions must be fully contained within a non-rigid region "
+                "(tail, loop, linker, or flexible_prot)."
+            )
+
 
     last_end = max(int(c[2]) for c in classes)
 

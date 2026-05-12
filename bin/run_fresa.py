@@ -194,6 +194,22 @@ def main() -> None:
     elapsed_min = round((time.time() - start_ts) / 60.0, 2)
     write_check(check_file, got, requested, status, elapsed_min)
 
+    cleanup_files = [
+        # f"{args.accession}_params.txt",
+        "backtrack_report.txt",
+        "fresa_check.tsv",
+        "Reference_conformation.pdb",
+        "report.txt",
+    ]
+
+    for fname in cleanup_files:
+        fpath = run_dir / fname
+        try:
+            if fpath.exists():
+                fpath.unlink()
+        except Exception as e:
+            print(f"[WARN] Could not delete {fpath}: {e}")
+
     meta = {
         "accession": args.accession,
         "run_dir": str(run_dir),
